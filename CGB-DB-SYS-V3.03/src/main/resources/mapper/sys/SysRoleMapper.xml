@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.db.sys.dao.SysRoleDao">
+
+	<select id="findPageObjects"
+		resultType="com.db.sys.entity.SysRole">
+		select *
+		from sys_roles
+		<include refid="queryWhereId" />
+		order by createdTime desc
+		limit #{startIndex},#{pageSize}
+	</select>
+	<select id="getRowCount" resultType="int">
+		select count(*)
+		from sys_roles
+		<include refid="queryWhereId" />
+	</select>
+	<sql id="queryWhereId">
+		<where>
+			<if test="name!=null and name!=''">
+				name like concat("%",#{name},"%")
+			</if>
+		</where>
+	</sql>
+<!-- 根据角色id删除角色自身信息 -->
+   <delete id="deleteObject"
+            parameterType="int">
+         delete 
+         from sys_roles
+         where id=#{id}        
+    </delete>
+
+
+<!--将角色信息写入数据库  --> 
+<!-- insert 操作后，使用生成的主键值，将主键值赋值给这个参数对象的id -->
+ <insert id="insertObject"
+            parameterType="com.db.sys.entity.SysRole"
+			useGeneratedKeys="true"
+			keyProperty="id">
+         
+         insert into sys_roles 
+         (id,name,note,createdTime,modifiedTime,
+         createdUser,modifiedUser) 
+         values
+         (null,#{name},#{note},now(),now(),
+         #{createdUser},#{modifiedUser})
+           
+    </insert>
+    
+    
+<!--  自定义结果映射 基于命名空间拿元素取访问 
+作用是将实体类中的字段与数据库表中的字段进行关联映射。 -->
+ <resultMap id="sysRoleMenuVo" type="com.db.sys.vo.SysRoleMenuVo" >
+        <!--1to多     基于角色id找到菜单id
+        并将其值存在 SysRoleMenuVo对象的menuId属性-->
+        <collection property="menuIds" 
+        			column="id"
+                    select="com.db.sys.dao.SysRoleMenuDao.findMenuIdsByRoleId">
+        </collection>
+   </resultMap>
+
+<!-- 查的是角色自身的信息 -->
+  <select id="findObjectById" resultMap="sysRoleMenuVo">
+           select id,name,note
+           from sys_roles
+           where id=#{id}        
+   </select>
+	
+	<update id="updateObject">
+		update sys_roles
+		<set>
+			<if test="name!=null and name!=''">
+		 		name=#{name},
+			</if>
+			<if test="note!=null and note!=''">
+				note=#{note},
+			</if>
+			modifiedTime=now(),
+			<if test="modifiedUser!=null and modifiedTime!=''">
+				modifiedUser=#{modifiedUser}
+			</if>
+		</set>
+			where id = #{id}
+	</update>
+
+	<!-- 查询多有角色信息 -->
+	<select id="findObjects" resultType="com.db.common.vo.CheckBox">
+		select id,name
+		from sys_roles
+	</select>
+
+	<select id="getRowCountByName" resultType="com.db.sys.entity.SysRole">
+		select * from sys_roles where name = #{name}
+	</select>
+	
+	
+</mapper>
+
+
+

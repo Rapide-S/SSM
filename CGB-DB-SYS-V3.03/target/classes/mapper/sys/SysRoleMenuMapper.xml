@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.db.sys.dao.SysRoleMenuDao">
+ 	<!-- 根据菜单id删除记录 -->
+ 	<delete id="deleteObjectsByMenuId"
+             parameterType="int">
+          delete from sys_role_menus
+          where menu_id=#{menuId}
+     </delete>
+     
+	<!--根据角色id删除角色与用户的关系数据( -->
+	<delete id="deleteObjectsByRoleId" parameterType="int">
+		delete
+		from sys_user_roles
+		where role_id=#{roleId}
+	</delete>
+
+
+	<!-- //菜单和角色关系表 插入数据 -->
+	<insert id="insertObjects">
+		insert into sys_role_menus
+		(role_id,menu_id)
+		values
+		<foreach collection="menuIds" separator="," item="item">
+			(#{roleId},#{item})
+		</foreach>
+	</insert>
+	<!--  基于角色id找到菜单id -->
+	 <select id="findMenuIdsByRoleId"
+              resultType="int">
+            select menu_id
+            from sys_role_menus
+            where role_id=#{id} 
+  </select>
+  
+  <!--基于角色id查找菜单id  -->
+  <select id="findMenuIdsByRoleIds"
+         resultType="int">
+         select menu_id
+         from sys_role_menus
+         where role_id in 
+         <foreach collection="roleIds"
+                  open="("
+                  close=")"
+                  separator=","
+                  item="item">
+               #{item}
+         </foreach>
+</select>
+  
+  
+  
+	
+	
+
+</mapper>

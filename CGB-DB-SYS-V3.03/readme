@@ -1,0 +1,17 @@
+注解版    安全验证授权  框架  练习
+
+用配置类SpringShiroConfig.class
+
+取代 配置文件
+
+
+添加   时间访问 拦截器
+在规定时间段内 允许访问，其他时间段登录会被拦截
+
+TimeAccessInterceptor
+
+删除web.xml文件
+
+在pom.xml中  添加war  包，
+添加标签  configuration 值为false 
+忽略web.xml

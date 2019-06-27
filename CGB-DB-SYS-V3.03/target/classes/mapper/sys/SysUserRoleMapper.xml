@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.db.sys.dao.SysUserRoleDao">
+	<!--查询所有菜单，以及多有对应的所有上级菜单名称    通过左外链接，拿到所有的数据 -->
+	<select id="findObjects" resultType="map"><!--  -->
+		select c.*,p.name parentName
+		from sys_menus c left join sys_menus p
+		on c.parentId=p.id
+	</select>
+
+	<!--  第二种方法
+	select c.*,(select p.name from sys_menus p where c.parentId =p.id) parentName
+	from sys_menus c
+	-->
+	<!--SysMenuDao根据id统计子菜单  -->
+	<select id="getChildCount" parameterType="int" resultType="int">
+          select count(*) from sys_menus where parentId=#{id}        
+  </select>
+	
+	<!--SysMenuDao根据id删除菜单 元素 -->
+     <delete id="deleteObject" parameterType="int"> 
+     	delete from sys_menus where id=#{id}
+     </delete>
+	<!--定义菜单节点查询元素  -->
+ <select id="findZtreeMenuNodes"
+            resultType="com.db.common.vo.Node">
+        select id,name,parentId
+        from sys_menus        
+    </select>
+
+
+	<insert id="insertObject"
+		parameterType="com.db.sys.entity.SysMenu">
+		insert into sys_menus
+		(name,url,type,sort,note,parentId,permission,
+		createdTime,modifiedTime,createdUser,modifiedUser)
+		values
+		(#{name},#{url},#{type},#{sort},#{note},#{parentId},#{permission},
+		now(),now(),#{createdUser},#{modifiedUser})
+	</insert>
+
+<!--修改 菜单里的数据  -->
+	<update id="updateObject"
+		parameterType="com.db.sys.entity.SysMenu">
+		update sys_menus
+		set
+		name=#{name},
+		type=#{type},
+		sort=#{sort},
+		url=#{url},
+		parentId=#{parentId},
+		permission=#{permission},
+		modifiedUser=#{modifiedUser},
+		modifiedTime=now()
+		where id=#{id}
+	</update>
+    <!-- 基于角色id删除关系表数据 -->
+     <delete id="deleteObjectsByRoleId"
+             parameterType="int">
+          delete from sys_user_roles
+          where role_id=#{roleId}
+     </delete>
+     
+     
+        <insert id="insertObjects">
+       insert into sys_user_roles
+       (user_id,role_id)
+       values
+       <foreach collection="roleIds" separator="," item="item">
+          (#{userId},#{item})
+       </foreach>
+    </insert>
+     <!-- 根据用户id查询角色ID方法) -->
+      <select id="findRoleIdsByUserId"
+           resultType="int">
+        select role_id
+        from sys_user_roles
+        where user_id=#{id}
+   </select>
+     
+     <!--更新用户的信息的时候 ，先删除关系表  -->
+      <delete id="deleteObjectsByUserId"
+           parameterType="int">
+   
+         delete from sys_user_roles
+         where user_id=#{userId}
+                 
+   </delete>
+     
+     
+     
+     
+     
+</mapper>
